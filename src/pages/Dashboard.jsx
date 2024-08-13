@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Pagination } from "@/components/ui/pagination"
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -17,11 +18,27 @@ const Dashboard = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [editUserEmail, setEditUserEmail] = useState('');
   const [editUserPassword, setEditUserPassword] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [usersPerPage] = useState(10);
 
   useEffect(() => {
     fetchUser();
     fetchUsers();
   }, []);
+
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = users.filter(user => 
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  ).slice(indexOfFirstUser, indexOfLastUser);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
 
   const fetchUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -144,6 +161,13 @@ const Dashboard = () => {
           <CardTitle>User List</CardTitle>
         </CardHeader>
         <CardContent>
+          <Input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="mb-4"
+          />
           <Table>
             <TableHeader>
               <TableRow>
@@ -154,7 +178,7 @@ const Dashboard = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {currentUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString()}</TableCell>
@@ -167,6 +191,13 @@ const Dashboard = () => {
               ))}
             </TableBody>
           </Table>
+          <Pagination
+            className="mt-4"
+            currentPage={currentPage}
+            totalCount={users.length}
+            pageSize={usersPerPage}
+            onPageChange={paginate}
+          />
         </CardContent>
       </Card>
 
