@@ -24,7 +24,7 @@ const Dashboard = () => {
   };
 
   const fetchUsers = async () => {
-    const { data, error } = await supabase.from('users').select('*');
+    const { data, error } = await supabase.from('users').select('user_id, email');
     if (error) {
       console.error('Error fetching users:', error);
     } else {
@@ -119,10 +119,10 @@ const Dashboard = () => {
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.user_id}>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Button variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                    <Button variant="destructive" onClick={() => handleDeleteUser(user.user_id)}>Delete</Button>
                   </TableCell>
                 </TableRow>
               ))}
