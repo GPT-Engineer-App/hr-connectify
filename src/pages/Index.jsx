@@ -1,21 +1,26 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
+import { useSupabaseAuth } from '../integrations/supabase/auth';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const Index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const { session, loading } = useSupabaseAuth();
+  const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+    setMessage('');
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      setMessage('Signed in successfully!');
+      navigate('/dashboard');
     } catch (error) {
       setMessage(error.message);
     }
@@ -23,6 +28,7 @@ const Index = () => {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
+    setMessage('');
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
@@ -31,6 +37,15 @@ const Index = () => {
       setMessage(error.message);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (session) {
+    navigate('/dashboard');
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -83,7 +98,11 @@ const Index = () => {
           </Tabs>
         </CardContent>
         <CardFooter>
-          {message && <p className="text-sm text-center w-full">{message}</p>}
+          {message && (
+            <Alert variant="destructive" className="w-full">
+              <AlertDescription>{message}</AlertDescription>
+            </Alert>
+          )}
         </CardFooter>
       </Card>
     </div>
