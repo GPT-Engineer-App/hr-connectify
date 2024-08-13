@@ -138,6 +138,7 @@ const Dashboard = () => {
               value={newUserEmail}
               onChange={(e) => setNewUserEmail(e.target.value)}
               required
+              className="bg-white"
             />
             <Input
               type="password"
@@ -145,6 +146,7 @@ const Dashboard = () => {
               value={newUserPassword}
               onChange={(e) => setNewUserPassword(e.target.value)}
               required
+              className="bg-white"
             />
             <Button type="submit">Add User</Button>
           </form>
