@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const Index = () => {
@@ -43,23 +42,6 @@ const Index = () => {
     }
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-      if (data) {
-        setMessage('If an account exists for this email, a password reset link has been sent. Please check your inbox and spam folder.');
-      } else {
-        setMessage('Unable to send reset email. Please try again later.');
-      }
-    } catch (error) {
-      console.error('Password reset error:', error);
-      setMessage('An error occurred. Please try again later or contact support.');
-    }
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -77,47 +59,25 @@ const Index = () => {
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="forgot">Forgot Password</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn}>
-                <div className="space-y-4">
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <Button type="submit" className="w-full">Sign In</Button>
-                </div>
-              </form>
-            </TabsContent>
-            <TabsContent value="forgot">
-              <form onSubmit={handleForgotPassword}>
-                <div className="space-y-4">
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <Button type="submit" className="w-full">Reset Password</Button>
-                </div>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleSignIn}>
+            <div className="space-y-4">
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <Button type="submit" className="w-full">Sign In</Button>
+            </div>
+          </form>
         </CardContent>
         <CardFooter>
           {message && (
