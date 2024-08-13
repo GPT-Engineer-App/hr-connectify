@@ -47,11 +47,16 @@ const Index = () => {
     e.preventDefault();
     setMessage('');
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      setMessage('Password reset email sent!');
+      if (data) {
+        setMessage('If an account exists for this email, a password reset link has been sent. Please check your inbox and spam folder.');
+      } else {
+        setMessage('Unable to send reset email. Please try again later.');
+      }
     } catch (error) {
-      setMessage(error.error_description || error.message);
+      console.error('Password reset error:', error);
+      setMessage('An error occurred. Please try again later or contact support.');
     }
   };
 
