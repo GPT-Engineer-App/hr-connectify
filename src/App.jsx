@@ -34,12 +34,12 @@ const App = () => {
       const { data, error } = await supabase
         .from('users')
         .select('role')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
       if (error) throw error;
       setIsAdmin(data?.role === 'admin');
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('Error checking admin status:', error.message);
       setIsAdmin(false); // Default to non-admin if there's an error
     }
   };
