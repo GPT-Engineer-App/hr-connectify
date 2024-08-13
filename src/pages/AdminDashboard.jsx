@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -18,9 +19,9 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.from('users').select('*');
+      const { data, error } = await supabase.auth.admin.listUsers();
       if (error) throw error;
-      setUsers(data);
+      setUsers(data.users);
     } catch (error) {
       console.error('Error fetching users:', error);
       setMessage('Failed to fetch users');
@@ -106,6 +107,8 @@ const AdminDashboard = () => {
               <TableRow>
                 <TableHead>Email</TableHead>
                 <TableHead>Created At</TableHead>
+                <TableHead>Email Confirmed</TableHead>
+                <TableHead>Last Sign In</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -114,6 +117,14 @@ const AdminDashboard = () => {
                 <TableRow key={user.id}>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString()}</TableCell>
+                  <TableCell>
+                    {user.email_confirmed_at ? (
+                      <Badge variant="success">Confirmed</Badge>
+                    ) : (
+                      <Badge variant="destructive">Not Confirmed</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'Never'}</TableCell>
                   <TableCell>
                     <Button variant="destructive" onClick={() => deleteUser(user.id)}>Delete</Button>
                   </TableCell>
