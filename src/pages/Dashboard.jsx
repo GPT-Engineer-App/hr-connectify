@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useSupabaseAuth } from '../integrations/supabase/auth';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Pagination } from "@/components/ui/pagination"
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
+  const { session, logout } = useSupabaseAuth();
   const [users, setUsers] = useState([]);
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
@@ -21,11 +23,15 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUser();
-    fetchUsers();
-  }, []);
+    if (!session) {
+      navigate('/');
+    } else {
+      fetchUsers();
+    }
+  }, [session, navigate]);
 
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -40,11 +46,6 @@ const Dashboard = () => {
     setCurrentPage(1);
   };
 
-  const fetchUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-  };
-
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase.auth.admin.listUsers();
@@ -57,8 +58,8 @@ const Dashboard = () => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
+    await logout();
+    navigate('/');
   };
 
   const handleAddUser = async (e) => {
@@ -116,14 +117,14 @@ const Dashboard = () => {
     setEditUserPassword('');
   };
 
-  if (!user) {
+  if (!session) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">TSVGlobal HRMS Dashboard</h1>
-      <p className="mb-4">Welcome, {user.email}</p>
+      <p className="mb-4">Welcome, {session.user.email}</p>
       
       <Card className="mb-8">
         <CardHeader>
