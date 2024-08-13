@@ -34,22 +34,9 @@ const Index = () => {
     e.preventDefault();
     setMessage('');
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .single();
-      
-      if (userError) throw userError;
-      
-      if (userData.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate('/dashboard');
     } catch (error) {
       setMessage(error.error_description || error.message);
     }

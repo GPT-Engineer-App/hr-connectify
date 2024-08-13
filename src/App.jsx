@@ -15,38 +15,18 @@ const App = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) {
-        checkAdminStatus(session.user.id);
-      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        checkAdminStatus(session.user.id);
-      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId) => {
-    if (!userId) return;
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-      if (error) throw error;
-      setIsAdmin(data.role === 'admin');
-    } catch (error) {
-      console.error('Error checking admin status:', error.message);
-      setIsAdmin(false);
-    }
-  };
+  // Admin status check removed
 
   return (
     <QueryClientProvider client={queryClient}>
