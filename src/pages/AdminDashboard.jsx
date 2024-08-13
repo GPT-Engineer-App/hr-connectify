@@ -11,6 +11,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserName, setNewUserName] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -36,12 +37,14 @@ const AdminDashboard = () => {
         email: newUserEmail,
         password: newUserPassword,
         email_confirm: true,
+        user_metadata: { name: newUserName }
       });
       if (error) throw error;
       setMessage('User created successfully');
       fetchUsers();
       setNewUserEmail('');
       setNewUserPassword('');
+      setNewUserName('');
     } catch (error) {
       console.error('Error creating user:', error);
       setMessage(error.message);
@@ -85,6 +88,13 @@ const AdminDashboard = () => {
               onChange={(e) => setNewUserPassword(e.target.value)}
               required
             />
+            <Input
+              type="text"
+              placeholder="Name"
+              value={newUserName}
+              onChange={(e) => setNewUserName(e.target.value)}
+              required
+            />
             <Button type="submit">Create User</Button>
           </form>
         </CardContent>
@@ -106,6 +116,7 @@ const AdminDashboard = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Email</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Created At</TableHead>
                 <TableHead>Email Confirmed</TableHead>
                 <TableHead>Last Sign In</TableHead>
@@ -116,6 +127,7 @@ const AdminDashboard = () => {
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.user_metadata?.name || 'N/A'}</TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleString()}</TableCell>
                   <TableCell>
                     {user.email_confirmed_at ? (
