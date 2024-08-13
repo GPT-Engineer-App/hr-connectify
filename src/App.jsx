@@ -10,7 +10,6 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [session, setSession] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -26,8 +25,6 @@ const App = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Admin status check removed
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -42,11 +39,7 @@ const App = () => {
                   to === '/' ? (
                     page
                   ) : session ? (
-                    to === '/admin' ? (
-                      isAdmin ? page : <Navigate to="/dashboard" replace />
-                    ) : (
-                      page
-                    )
+                    page
                   ) : (
                     <Navigate to="/" replace />
                   )
