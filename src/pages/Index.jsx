@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '../integrations/supabase/auth';
+import { supabase } from '../lib/supabase';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,8 +11,25 @@ const Index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const { session, loading } = useSupabaseAuth();
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -22,7 +39,7 @@ const Index = () => {
       if (error) throw error;
       navigate('/dashboard');
     } catch (error) {
-      setMessage(error.message);
+      setMessage(error.error_description || error.message);
     }
   };
 
@@ -34,7 +51,7 @@ const Index = () => {
       if (error) throw error;
       setMessage('Password reset email sent!');
     } catch (error) {
-      setMessage(error.message);
+      setMessage(error.error_description || error.message);
     }
   };
 
