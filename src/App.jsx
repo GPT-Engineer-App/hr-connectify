@@ -15,14 +15,18 @@ const App = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      checkAdminStatus(session?.user.id);
+      if (session) {
+        checkAdminStatus(session.user.id);
+      }
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      checkAdminStatus(session?.user.id);
+      if (session) {
+        checkAdminStatus(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -34,10 +38,14 @@ const App = () => {
       const { data, error } = await supabase
         .from('users')
         .select('role')
-        .eq('user_id', userId)
-        .single();
+        .eq('user_id', userId);
       if (error) throw error;
-      setIsAdmin(data?.role === 'admin');
+      if (data && data.length > 0) {
+        setIsAdmin(data[0].role === 'admin');
+      } else {
+        console.warn('No user found with the given user_id');
+        setIsAdmin(false);
+      }
     } catch (error) {
       console.error('Error checking admin status:', error.message);
       setIsAdmin(false); // Default to non-admin if there's an error
