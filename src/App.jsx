@@ -10,20 +10,37 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [session, setSession] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      checkAdminStatus(session?.user.id);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      checkAdminStatus(session?.user.id);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminStatus = async (userId) => {
+    if (!userId) return;
+    const { data, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+    if (error) {
+      console.error('Error checking admin status:', error);
+    } else {
+      setIsAdmin(data.role === 'admin');
+    }
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -39,7 +56,11 @@ const App = () => {
                   to === '/' ? (
                     page
                   ) : session ? (
-                    page
+                    to === '/admin' ? (
+                      isAdmin ? page : <Navigate to="/dashboard" replace />
+                    ) : (
+                      page
+                    )
                   ) : (
                     <Navigate to="/" replace />
                   )
