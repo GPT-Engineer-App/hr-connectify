@@ -30,15 +30,17 @@ const App = () => {
 
   const checkAdminStatus = async (userId) => {
     if (!userId) return;
-    const { data, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-    if (error) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .single();
+      if (error) throw error;
+      setIsAdmin(data?.role === 'admin');
+    } catch (error) {
       console.error('Error checking admin status:', error);
-    } else {
-      setIsAdmin(data.role === 'admin');
+      setIsAdmin(false); // Default to non-admin if there's an error
     }
   };
 

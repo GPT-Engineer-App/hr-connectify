@@ -17,12 +17,13 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchUsers = async () => {
-    const { data: { users }, error } = await supabase.auth.admin.listUsers();
-    if (error) {
+    try {
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) throw error;
+      setUsers(data);
+    } catch (error) {
       console.error('Error fetching users:', error);
       setMessage('Failed to fetch users');
-    } else {
-      setUsers(users);
     }
   };
 
