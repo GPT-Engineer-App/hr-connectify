@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -13,6 +15,9 @@ const AdminDashboard = () => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [message, setMessage] = useState('');
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserName, setEditUserName] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -61,6 +66,30 @@ const AdminDashboard = () => {
       console.error('Error deleting user:', error);
       setMessage(error.message);
     }
+  };
+
+  const updateUser = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    try {
+      const { data, error } = await supabase.auth.admin.updateUserById(
+        editingUser.id,
+        { email: editUserEmail, user_metadata: { name: editUserName } }
+      );
+      if (error) throw error;
+      setMessage('User updated successfully');
+      fetchUsers();
+      setEditingUser(null);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setMessage(error.message);
+    }
+  };
+
+  const openEditDialog = (user) => {
+    setEditingUser(user);
+    setEditUserEmail(user.email);
+    setEditUserName(user.user_metadata?.name || '');
   };
 
   return (
@@ -138,6 +167,7 @@ const AdminDashboard = () => {
                   </TableCell>
                   <TableCell>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'Never'}</TableCell>
                   <TableCell>
+                    <Button variant="outline" onClick={() => openEditDialog(user)} className="mr-2">Edit</Button>
                     <Button variant="destructive" onClick={() => deleteUser(user.id)}>Delete</Button>
                   </TableCell>
                 </TableRow>
@@ -146,6 +176,44 @@ const AdminDashboard = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={editingUser !== null} onOpenChange={() => setEditingUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user information</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={updateUser}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  value={editUserEmail}
+                  onChange={(e) => setEditUserEmail(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={editUserName}
+                  onChange={(e) => setEditUserName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
